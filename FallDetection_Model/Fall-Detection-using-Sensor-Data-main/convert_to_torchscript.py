@@ -13,7 +13,6 @@ class ComplexCNN1D(nn.Module):
         self.conv1 = nn.Conv1d(in_channels=input_shape[1], out_channels=64, kernel_size=3, padding='same')
         self.bn1 = nn.BatchNorm1d(64)
         self.dropout1 = nn.Dropout(0.3)
-
         # First Residual Block
         self.conv2_shortcut = nn.Conv1d(in_channels=64, out_channels=128, kernel_size=1, padding='same')
         self.conv2_1 = nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, padding='same')
