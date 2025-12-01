@@ -6,7 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D9031E942EDEAEF10046B8B3 /* AWSCore in Frameworks */ = {isa = PBXBuildFile; productRef = D9031E932EDEAEF10046B8B3 /* AWSCore */; };
+		D9031E962EDEAEF10046B8B3 /* AWSSageMakerRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = D9031E952EDEAEF10046B8B3 /* AWSSageMakerRuntime */; };
+		D9031E982EDEAF100046B8B3 /* FallDetectionModel.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = D9031E972EDEAF100046B8B3 /* FallDetectionModel.mlpackage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		D9031E972EDEAF100046B8B3 /* FallDetectionModel.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = FallDetectionModel.mlpackage; sourceTree = "<group>"; };
 		D933150A2EDADABF00A56DA6 /* MAC-LRN_FallDetection.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MAC-LRN_FallDetection.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -23,6 +30,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9031E962EDEAEF10046B8B3 /* AWSSageMakerRuntime in Frameworks */,
+				D9031E942EDEAEF10046B8B3 /* AWSCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -34,6 +43,7 @@
 			children = (
 				D933150C2EDADABF00A56DA6 /* MAC-LRN_FallDetection */,
 				D933150B2EDADABF00A56DA6 /* Products */,
+				D9031E972EDEAF100046B8B3 /* FallDetectionModel.mlpackage */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,6 +75,8 @@
 			);
 			name = "MAC-LRN_FallDetection";
 			packageProductDependencies = (
+				D9031E932EDEAEF10046B8B3 /* AWSCore */,
+				D9031E952EDEAEF10046B8B3 /* AWSSageMakerRuntime */,
 			);
 			productName = "MAC-LRN_FallDetection";
 			productReference = D933150A2EDADABF00A56DA6 /* MAC-LRN_FallDetection.app */;
@@ -94,6 +106,9 @@
 			);
 			mainGroup = D93315012EDADABF00A56DA6;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D9031E922EDEAEF10046B8B3 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D933150B2EDADABF00A56DA6 /* Products */;
 			projectDirPath = "";
@@ -119,6 +134,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D9031E982EDEAF100046B8B3 /* FallDetectionModel.mlpackage in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,6 +340,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D9031E922EDEAEF10046B8B3 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/aws-amplify/aws-sdk-ios-spm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.41.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D9031E932EDEAEF10046B8B3 /* AWSCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D9031E922EDEAEF10046B8B3 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
+			productName = AWSCore;
+		};
+		D9031E952EDEAEF10046B8B3 /* AWSSageMakerRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D9031E922EDEAEF10046B8B3 /* XCRemoteSwiftPackageReference "aws-sdk-ios-spm" */;
+			productName = AWSSageMakerRuntime;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D93315022EDADABF00A56DA6 /* Project object */;
 }
