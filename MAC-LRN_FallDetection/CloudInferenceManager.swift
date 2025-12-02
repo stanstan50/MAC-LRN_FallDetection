@@ -4,9 +4,6 @@
 //
 //  Created by Stanley Yale Zeng on 12/2/25.
 //
-//  Handles AWS SageMaker cloud inference
-//
-//
 //  CloudInferenceManager.swift
 //  FallDetectionComplete
 //
@@ -23,7 +20,8 @@ class CloudInferenceManager: ObservableObject {
     @Published var lastProbability: Double = 0.0
     @Published var fallDetected: Bool = false
     @Published var isProcessing: Bool = false
-    @Published var errorMessage: String? = nil  // NEW: Error display
+    @Published var errorMessage: String? = nil
+    @Published var lastLatencyMs: Double = 0.0  // NEW: Latency tracking
     
     // MARK: - AWS Configuration
     private let endpointName = "right-pocket-endpoint"
@@ -32,6 +30,9 @@ class CloudInferenceManager: ObservableObject {
     // ⚠️ TODO: Replace with your AWS credentials
     private let accessKey = "YOUR_ACCESS_KEY_ID"
     private let secretKey = "YOUR_SECRET_ACCESS_KEY"
+    
+    // MARK: - Private Properties
+    private var requestStartTime: CFAbsoluteTime = 0.0
     
     // MARK: - Initialization
     init() {
@@ -63,7 +64,8 @@ class CloudInferenceManager: ObservableObject {
         }
         
         isProcessing = true
-        errorMessage = nil  // Clear previous errors
+        errorMessage = nil
+        requestStartTime = CFAbsoluteTimeGetCurrent()  // Start timer
         
         let batchInput = [sensorWindow]
         
@@ -83,8 +85,15 @@ class CloudInferenceManager: ObservableObject {
         request?.body = jsonData
         
         runtime.invokeEndpoint(request!).continueWith { [weak self] task in
+            guard let self = self else { return nil }
+            
+            // Calculate latency
+            let endTime = CFAbsoluteTimeGetCurrent()
+            let latencyMs = (endTime - self.requestStartTime) * 1000.0
+            
             DispatchQueue.main.async {
-                self?.isProcessing = false
+                self.isProcessing = false
+                self.lastLatencyMs = latencyMs
                 
                 if let error = task.error {
                     let errorDescription = error.localizedDescription
@@ -92,17 +101,17 @@ class CloudInferenceManager: ObservableObject {
                     
                     // Set user-friendly error message
                     if errorDescription.contains("security token") || errorDescription.contains("invalid") {
-                        self?.errorMessage = "⚠️ Invalid AWS credentials"
-                        self?.lastPrediction = "Auth Error"
+                        self.errorMessage = "⚠️ Invalid AWS credentials"
+                        self.lastPrediction = "Auth Error"
                     } else if errorDescription.contains("internet") || errorDescription.contains("network") {
-                        self?.errorMessage = "⚠️ No internet connection"
-                        self?.lastPrediction = "Network Error"
+                        self.errorMessage = "⚠️ No internet connection"
+                        self.lastPrediction = "Network Error"
                     } else if errorDescription.contains("endpoint") {
-                        self?.errorMessage = "⚠️ SageMaker endpoint not found"
-                        self?.lastPrediction = "Endpoint Error"
+                        self.errorMessage = "⚠️ SageMaker endpoint not found"
+                        self.lastPrediction = "Endpoint Error"
                     } else {
-                        self?.errorMessage = "⚠️ Cloud error: \(errorDescription)"
-                        self?.lastPrediction = "Error"
+                        self.errorMessage = "⚠️ Cloud error: \(errorDescription)"
+                        self.lastPrediction = "Error"
                     }
                     return
                 }
@@ -110,12 +119,13 @@ class CloudInferenceManager: ObservableObject {
                 guard let result = task.result,
                       let responseBody = result.body else {
                     print("❌ [CLOUD] No response")
-                    self?.errorMessage = "⚠️ No response from server"
-                    self?.lastPrediction = "No Response"
+                    self.errorMessage = "⚠️ No response from server"
+                    self.lastPrediction = "No Response"
                     return
                 }
                 
-                self?.parseResponse(responseBody)
+                print("⏱️ [CLOUD] Latency: \(String(format: "%.1f", latencyMs)) ms")
+                self.parseResponse(responseBody)
             }
             return nil
         }
@@ -173,5 +183,6 @@ class CloudInferenceManager: ObservableObject {
         fallDetected = false
         isProcessing = false
         errorMessage = nil
+        lastLatencyMs = 0.0
     }
 }

@@ -4,6 +4,9 @@
 //
 //  Created by Stanley Yale Zeng on 12/2/25.
 //
+//  LocalInferenceManager.swift
+//  FallDetectionComplete
+//
 //  Handles local CoreML inference
 //
 
@@ -16,6 +19,7 @@ class LocalInferenceManager: ObservableObject {
     @Published var lastProbability: Double = 0.0
     @Published var fallDetected: Bool = false
     @Published var isProcessing: Bool = false
+    @Published var lastLatencyMs: Double = 0.0  // NEW: Latency tracking
     
     // MARK: - Private Properties
     private var model: FallDetectionModel?
@@ -50,6 +54,7 @@ class LocalInferenceManager: ObservableObject {
         }
         
         isProcessing = true
+        let startTime = CFAbsoluteTimeGetCurrent()  // Start timer
         
         do {
             // Prepare MLMultiArray
@@ -69,10 +74,16 @@ class LocalInferenceManager: ObservableObject {
             let prediction = try model.prediction(input: input)
             let probability = Double(truncating: prediction.fall_probability[0])
             
+            // Calculate latency
+            let endTime = CFAbsoluteTimeGetCurrent()
+            let latencyMs = (endTime - startTime) * 1000.0
+            
             // Update UI
             DispatchQueue.main.async { [weak self] in
                 self?.isProcessing = false
+                self?.lastLatencyMs = latencyMs
                 self?.updatePrediction(probability: probability)
+                print("⏱️ [LOCAL] Latency: \(String(format: "%.1f", latencyMs)) ms")
             }
             
         } catch {
@@ -102,5 +113,6 @@ class LocalInferenceManager: ObservableObject {
         lastProbability = 0.0
         fallDetected = false
         isProcessing = false
+        lastLatencyMs = 0.0
     }
 }

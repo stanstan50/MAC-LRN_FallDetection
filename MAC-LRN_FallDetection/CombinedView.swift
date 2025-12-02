@@ -86,6 +86,13 @@ struct CombinedView: View {
                         Text(String(format: "%.1f%%", combinedManager.localProbability * 100))
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                        
+                        // Latency
+                        if combinedManager.localLatencyMs > 0 {
+                            Text(String(format: "%.1f ms", combinedManager.localLatencyMs))
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                        }
                     }
                     
                     // Cloud Status
@@ -120,6 +127,13 @@ struct CombinedView: View {
                         Text(String(format: "%.1f%%", combinedManager.cloudProbability * 100))
                             .font(.caption2)
                             .foregroundColor(.secondary)
+                        
+                        // Latency
+                        if combinedManager.cloudLatencyMs > 0 {
+                            Text(String(format: "%.1f ms", combinedManager.cloudLatencyMs))
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                        }
                     }
                 }
                 

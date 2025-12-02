@@ -4,9 +4,6 @@
 //
 //  Created by Stanley Yale Zeng on 12/2/25.
 //
-//  Manages both local and cloud inference simultaneously
-//
-//
 //  CombinedInferenceManager.swift
 //  FallDetectionComplete
 //
@@ -30,7 +27,10 @@ class CombinedInferenceManager: ObservableObject {
     @Published var cloudFallDetected: Bool = false
     
     @Published var isProcessing: Bool = false
-    @Published var cloudErrorMessage: String? = nil  // NEW: Cloud error display
+    @Published var cloudErrorMessage: String? = nil
+    
+    @Published var localLatencyMs: Double = 0.0  // NEW: Local latency
+    @Published var cloudLatencyMs: Double = 0.0  // NEW: Cloud latency
     
     // MARK: - Private Managers
     private let localManager = LocalInferenceManager()
@@ -62,6 +62,7 @@ class CombinedInferenceManager: ObservableObject {
             localPrediction = localManager.lastPrediction
             localProbability = localManager.lastProbability
             localFallDetected = localManager.fallDetected
+            localLatencyMs = localManager.lastLatencyMs  // NEW: Sync latency
         }
         
         // Update cloud state
@@ -69,7 +70,8 @@ class CombinedInferenceManager: ObservableObject {
             cloudPrediction = cloudManager.lastPrediction
             cloudProbability = cloudManager.lastProbability
             cloudFallDetected = cloudManager.fallDetected
-            cloudErrorMessage = cloudManager.errorMessage  // NEW: Sync error state
+            cloudErrorMessage = cloudManager.errorMessage
+            cloudLatencyMs = cloudManager.lastLatencyMs  // NEW: Sync latency
         }
         
         isProcessing = false
@@ -93,5 +95,7 @@ class CombinedInferenceManager: ObservableObject {
         cloudFallDetected = false
         isProcessing = false
         cloudErrorMessage = nil
+        localLatencyMs = 0.0
+        cloudLatencyMs = 0.0
     }
 }

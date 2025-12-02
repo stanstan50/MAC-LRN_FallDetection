@@ -58,6 +58,18 @@ struct LocalOnlyView: View {
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
+                // Latency Display
+                if localInference.lastLatencyMs > 0 {
+                    HStack(spacing: 5) {
+                        Image(systemName: "clock")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        Text(String(format: "Latency: %.1f ms", localInference.lastLatencyMs))
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                    }
+                }
+                
                 // Buffer Status
                 VStack(spacing: 8) {
                     Text("Buffer: \(sensorManager.sensorBuffer.count)/200 samples")
