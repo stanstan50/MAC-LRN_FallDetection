@@ -60,6 +60,18 @@ struct CloudOnlyView: View {
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
+                // Latency Display
+                if cloudInference.lastLatencyMs > 0 {
+                    HStack(spacing: 5) {
+                        Image(systemName: "clock")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                        Text(String(format: "Latency: %.1f ms", cloudInference.lastLatencyMs))
+                            .font(.subheadline)
+                            .foregroundColor(.orange)
+                    }
+                }
+                
                 // Buffer Status
                 VStack(spacing: 8) {
                     Text("Buffer: \(sensorManager.sensorBuffer.count)/200 samples")
