@@ -102,7 +102,7 @@ This folder contains inference results and performance analysis comparing **loca
 - **Local Inference:** 27 trials
 - **Cloud Inference:** 27 trials
 - **Activities Tested:** 9 unique activities (5 normal, 4 fall types)
-  - Normal activities: 15 trials (Walking, Jogging, Stairs, Standing, Jumping)
+  - Normal activities: 15 trials (Walking, Jogging, Stairs, Sit/Standing, Jumping)
   - Fall activities: 12 trials (Forward, Backward, Left, Right - 3 trials each)
 
 ### **Latency Testing**
@@ -170,27 +170,7 @@ This folder contains inference results and performance analysis comparing **loca
 
 ---
 
-## 📝 Data Format Example
-
-### **Simplified Format** (local_inference.csv, cloud_inference.csv)
-```csv
-activity_code,probability,prediction,actual
-0,0.0000,0,0
-5,1.0000,1,1
-8,0.4470,0,1
-6,0.9840,1,1
-7,0.0000,0,1
-```
-
-**Columns:**
-- `activity_code` - Numeric code: 0-4 (normal activities), 5-8 (falls)
-- `probability` - Decimal probability (0-1), rounded to 4 decimal places
-- `prediction` - Binary: 0 (normal), 1 (fall)
-- `actual` - Ground truth: 0 (normal), 1 (fall)
-
----
-
-## 🚀 Usage
+## Usage
 
 ### **1. Analyze Inference Accuracy**
 Open and run `convert_inference_results.ipynb` to:
@@ -220,14 +200,6 @@ Open and run `latency_analysis.ipynb` to:
 - Statistical tests (t-tests, ANOVA, Mann-Whitney U)
 - Performance classifications (Excellent/Good/Acceptable/Poor)
 - Latency distribution visualizations
-
-### **3. Use Analysis Data**
-The CSV files are ready for:
-- Further statistical analysis
-- Model comparison and benchmarking
-- Performance reporting and documentation
-- Machine learning pipelines
-- Direct use (numeric format with activity codes and decimal probabilities)
 
 ---
 
@@ -269,8 +241,6 @@ The CSV files are ready for:
 1. **Use LOCAL inference for fall detection** - Real-time performance essential
 2. **Use CLOUD for data logging only** - Analytics, not real-time detection
 3. **Investigate lateral fall detection** - Collect more training data
-4. **Test sensor placement variations** - Front pocket, bag, etc.
-5. **All iPhone models tested are suitable** - Even iPhone 11 performs well
 
 ---
 
@@ -284,35 +254,8 @@ The CSV files are ready for:
 - `../FallDetection_Model/Fall-Detection-using-Sensor-Data-main/PreparedData_RightPocket.csv` - Training dataset
 
 ### **Deployment**
-- `../CloudDeploy/send_endpoint.py` - AWS SageMaker inference script
+- `../CloudDeploy/send_endpoint.py` - AWS SageMaker test inference script
 - `../MAC-LRN_FallDetection/` - iOS app source code
-
----
-
-## 🛠️ Requirements
-
-### **Python Dependencies**
-```bash
-# Core libraries
-pip install pandas numpy matplotlib seaborn scikit-learn
-
-# Statistical analysis (for latency_analysis.ipynb)
-pip install scipy
-```
-
-### **For Jupyter Notebook**
-```bash
-pip install jupyter notebook
-```
-
-### **Tested Environment**
-- Python 3.10.11
-- Pandas 2.0+
-- NumPy 1.24+
-- Matplotlib 3.7+
-- Seaborn 0.12+
-- Scikit-learn 1.3+
-- SciPy 1.11+
 
 ---
 
@@ -353,12 +296,11 @@ Histograms showing detailed latency distributions for all device-tier combinatio
 
 ### **Accuracy Improvements**
 1. **Collect more lateral fall data** - Critical for left/right fall detection
-2. **Test different sensor placements** - Front pocket, bag, wrist, etc.
-3. **Tune detection threshold** - May need different thresholds for fall types
-4. **Add data augmentation** - Synthetic lateral fall samples
+2. **Tune detection threshold** - May need different thresholds for fall types
+3. **Add data augmentation** - Synthetic lateral fall samples
 
 ### **Deployment Strategy**
-1. **Use LOCAL inference exclusively** - Latency analysis confirms suitability
+1. **Use LOCAL inference** - Latency analysis confirms suitability
 2. **Implement cloud logging** - Send results asynchronously (not for detection)
 3. **Add offline queue** - Store and forward when network available
 4. **Monitor battery impact** - Continuous local inference power usage
@@ -371,19 +313,13 @@ Histograms showing detailed latency distributions for all device-tier combinatio
 
 ---
 
-## 📖 References
+## 📖 Model
 
 - **Model Architecture:** ComplexCNN1D (3 residual blocks)
 - **Input:** 200 timesteps × 6 channels (ax, ay, az, gx, gy, gz)
 - **Sampling Rate:** 20Hz
 - **Window Size:** 10 seconds (200 samples)
 - **Threshold:** 0.5 (50% probability)
-
----
-
-## 📧 Contact
-
-For questions about this analysis, please refer to the main project README or open an issue on GitHub.
 
 ---
 
