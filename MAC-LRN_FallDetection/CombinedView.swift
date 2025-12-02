@@ -1,13 +1,5 @@
 //
 //  CombinedView.swift
-//  MAC-LRN_FallDetection
-//
-//  Created by Stanley Yale Zeng on 12/2/25.
-//
-//  Page 3: Both local and cloud inference with individual controls
-//
-//
-//  CombinedView.swift
 //  FallDetectionCombined
 //
 //  Page 3: Both local and cloud inference with individual controls
@@ -23,6 +15,7 @@ struct CombinedView: View {
     // MARK: - State
     @State private var isMonitoring = false
     @State private var timer: Timer?
+    @State private var isSinglePrediction = false
     
     // MARK: - Body
     var body: some View {
@@ -39,14 +32,14 @@ struct CombinedView: View {
                         Image(systemName: "iphone")
                             .foregroundColor(.blue)
                         Toggle("Local (CoreML)", isOn: $combinedManager.localEnabled)
-                            .disabled(!isMonitoring)
+                            .disabled(!isMonitoring && !isSinglePrediction)
                     }
                     
                     HStack {
                         Image(systemName: "cloud")
                             .foregroundColor(.blue)
                         Toggle("Cloud (AWS)", isOn: $combinedManager.cloudEnabled)
-                            .disabled(!isMonitoring)
+                            .disabled(!isMonitoring && !isSinglePrediction)
                     }
                 }
                 .padding()
@@ -61,22 +54,6 @@ struct CombinedView: View {
                     Text(alertModeText)
                         .font(.caption)
                         .foregroundColor(.secondary)
-                }
-                
-                // Cloud Error Banner
-                if let error = combinedManager.cloudErrorMessage {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.orange)
-                        Text(error)
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(8)
-                    .transition(.scale)
                 }
                 
                 Spacer()
@@ -158,20 +135,41 @@ struct CombinedView: View {
                 
                 Spacer()
                 
-                // Control Button
-                Button(action: toggleMonitoring) {
-                    HStack {
-                        Image(systemName: isMonitoring ? "stop.circle.fill" : "play.circle.fill")
-                            .font(.title3)
-                        Text(isMonitoring ? "Stop Monitoring" : "Start Monitoring")
-                            .font(.title3)
-                            .fontWeight(.semibold)
+                // Control Buttons
+                HStack(spacing: 15) {
+                    // Single Prediction Button
+                    Button(action: startSinglePrediction) {
+                        VStack(spacing: 4) {
+                            Image(systemName: "waveform.circle.fill")
+                                .font(.title2)
+                            Text("Single")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isSinglePrediction ? Color.orange : Color.green)
+                        .cornerRadius(15)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isMonitoring ? Color.red : Color.blue)
-                    .cornerRadius(15)
+                    .disabled(isMonitoring || isSinglePrediction)
+                    
+                    // Continuous Monitoring Button
+                    Button(action: toggleMonitoring) {
+                        VStack(spacing: 4) {
+                            Image(systemName: isMonitoring ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.title2)
+                            Text(isMonitoring ? "Stop" : "Continuous")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isMonitoring ? Color.red : Color.blue)
+                        .cornerRadius(15)
+                    }
+                    .disabled(isSinglePrediction)
                 }
                 .padding(.horizontal)
                 
@@ -179,6 +177,10 @@ struct CombinedView: View {
                     Text("Synchronized inference every 2.5 seconds")
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                } else if isSinglePrediction {
+                    Text("Recording 200 samples...")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
                 }
             }
             .padding()
@@ -205,10 +207,8 @@ struct CombinedView: View {
     }
     
     private var cloudStatusColor: Color {
-        if combinedManager.cloudErrorMessage != nil {
+        if combinedManager.isProcessing {
             return .orange
-        } else if combinedManager.isProcessing {
-            return .blue
         } else if combinedManager.cloudFallDetected {
             return .red
         } else {
@@ -221,16 +221,36 @@ struct CombinedView: View {
     }
     
     private var cloudStatusIcon: String {
-        if combinedManager.cloudErrorMessage != nil {
-            return "exclamationmark.triangle.fill"
-        } else if combinedManager.cloudFallDetected {
-            return "exclamationmark.triangle.fill"
-        } else {
-            return "checkmark.circle.fill"
-        }
+        combinedManager.cloudFallDetected ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
     }
     
     // MARK: - Methods
+    private func startSinglePrediction() {
+        isSinglePrediction = true
+        sensorManager.startCollecting()
+        
+        // Poll buffer until we have exactly 200 samples
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            if sensorManager.hasFullWindow() {
+                timer?.invalidate()
+                timer = nil
+                
+                // Perform single inference with both enabled modes
+                if let window = sensorManager.getCurrentWindow() {
+                    combinedManager.predictWithBoth(sensorWindow: window)
+                }
+                
+                // Stop collecting
+                sensorManager.stopCollecting()
+                isSinglePrediction = false
+                
+                print("✅ Single prediction completed")
+            }
+        }
+        
+        print("🔵 Starting single prediction mode...")
+    }
+    
     private func toggleMonitoring() {
         isMonitoring.toggle()
         

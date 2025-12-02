@@ -1,13 +1,5 @@
 //
 //  CloudOnlyView.swift
-//  MAC-LRN_FallDetection
-//
-//  Created by Stanley Yale Zeng on 12/2/25.
-//
-//  Page 2: Cloud AWS SageMaker inference only (local disabled)
-//
-//
-//  CloudOnlyView.swift
 //  FallDetectionCombined
 //
 //  Page 2: Cloud AWS SageMaker inference only (local disabled)
@@ -23,6 +15,7 @@ struct CloudOnlyView: View {
     // MARK: - State
     @State private var isMonitoring = false
     @State private var timer: Timer?
+    @State private var isSinglePrediction = false
     
     // MARK: - Body
     var body: some View {
@@ -34,29 +27,6 @@ struct CloudOnlyView: View {
                     .foregroundColor(.blue)
                 
                 Spacer()
-                
-                // Error Message Banner
-                if let error = cloudInference.errorMessage {
-                    VStack(spacing: 8) {
-                        HStack {
-                            Image(systemName: "exclamationmark.triangle.fill")
-                                .foregroundColor(.orange)
-                            Text(error)
-                                .font(.subheadline)
-                                .foregroundColor(.orange)
-                        }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.orange.opacity(0.1))
-                        .cornerRadius(10)
-                        
-                        Text("Check AWS credentials in CloudInferenceManager.swift")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.horizontal)
-                    .transition(.scale)
-                }
                 
                 // Status Circle
                 ZStack {
@@ -86,11 +56,9 @@ struct CloudOnlyView: View {
                     .multilineTextAlignment(.center)
                 
                 // Probability
-                if cloudInference.errorMessage == nil {
-                    Text(String(format: "Fall Probability: %.1f%%", cloudInference.lastProbability * 100))
-                        .font(.headline)
-                        .foregroundColor(.secondary)
-                }
+                Text(String(format: "Fall Probability: %.1f%%", cloudInference.lastProbability * 100))
+                    .font(.headline)
+                    .foregroundColor(.secondary)
                 
                 // Buffer Status
                 VStack(spacing: 8) {
@@ -115,20 +83,41 @@ struct CloudOnlyView: View {
                 
                 Spacer()
                 
-                // Control Button
-                Button(action: toggleMonitoring) {
-                    HStack {
-                        Image(systemName: isMonitoring ? "stop.circle.fill" : "play.circle.fill")
-                            .font(.title3)
-                        Text(isMonitoring ? "Stop Monitoring" : "Start Monitoring")
-                            .font(.title3)
-                            .fontWeight(.semibold)
+                // Control Buttons
+                HStack(spacing: 15) {
+                    // Single Prediction Button
+                    Button(action: startSinglePrediction) {
+                        VStack(spacing: 4) {
+                            Image(systemName: "waveform.circle.fill")
+                                .font(.title2)
+                            Text("Single")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isSinglePrediction ? Color.orange : Color.green)
+                        .cornerRadius(15)
                     }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(isMonitoring ? Color.red : Color.blue)
-                    .cornerRadius(15)
+                    .disabled(isMonitoring || isSinglePrediction)
+                    
+                    // Continuous Monitoring Button
+                    Button(action: toggleMonitoring) {
+                        VStack(spacing: 4) {
+                            Image(systemName: isMonitoring ? "stop.circle.fill" : "play.circle.fill")
+                                .font(.title2)
+                            Text(isMonitoring ? "Stop" : "Continuous")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isMonitoring ? Color.red : Color.blue)
+                        .cornerRadius(15)
+                    }
+                    .disabled(isSinglePrediction)
                 }
                 .padding(.horizontal)
                 
@@ -136,6 +125,10 @@ struct CloudOnlyView: View {
                     Text("Cloud inference every 2.5 seconds")
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                } else if isSinglePrediction {
+                    Text("Recording 200 samples...")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
                 }
             }
             .padding()
@@ -146,10 +139,8 @@ struct CloudOnlyView: View {
     
     // MARK: - Computed Properties
     private var statusColor: Color {
-        if cloudInference.errorMessage != nil {
+        if cloudInference.isProcessing {
             return .orange
-        } else if cloudInference.isProcessing {
-            return .blue
         } else if cloudInference.fallDetected {
             return .red
         } else {
@@ -158,16 +149,37 @@ struct CloudOnlyView: View {
     }
     
     private var statusIcon: String {
-        if cloudInference.errorMessage != nil {
-            return "exclamationmark.triangle.fill"
-        } else if cloudInference.fallDetected {
-            return "exclamationmark.triangle.fill"
-        } else {
-            return "checkmark.circle.fill"
-        }
+        cloudInference.fallDetected ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
     }
     
     // MARK: - Methods
+    private func startSinglePrediction() {
+        isSinglePrediction = true
+        sensorManager.startCollecting()
+        
+        // Poll buffer until we have exactly 200 samples
+        timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            if sensorManager.hasFullWindow() {
+                timer?.invalidate()
+                timer = nil
+                
+                // Perform single inference
+                if let window = sensorManager.getCurrentWindow() {
+                    print("📊 Sending single prediction to AWS SageMaker...")
+                    cloudInference.predictFall(sensorWindow: window)
+                }
+                
+                // Stop collecting
+                sensorManager.stopCollecting()
+                isSinglePrediction = false
+                
+                print("✅ Single prediction completed")
+            }
+        }
+        
+        print("🔵 Starting single prediction mode...")
+    }
+    
     private func toggleMonitoring() {
         isMonitoring.toggle()
         
