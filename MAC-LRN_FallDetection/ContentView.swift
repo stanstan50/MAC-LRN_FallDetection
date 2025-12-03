@@ -4,7 +4,10 @@
 //
 //  Created by Stanley Yale Zeng on 11/29/25.
 //
-//  Main navigation with 3 tabs: Local, Cloud, Combined
+//  ContentView.swift
+//  FallDetectionCombined
+//
+//  Main navigation with 4 tabs: Local, Cloud, Combined, Training
 //
 
 import SwiftUI
@@ -28,6 +31,12 @@ struct ContentView: View {
             CombinedView()
                 .tabItem {
                     Label("Combined", systemImage: "arrow.triangle.2.circlepath")
+                }
+            
+            // Page 4: Training Data Collection
+            TrainingDataView()
+                .tabItem {
+                    Label("Training", systemImage: "graduationcap")
                 }
         }
     }
