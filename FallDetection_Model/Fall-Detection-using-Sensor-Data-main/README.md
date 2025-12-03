@@ -1,31 +1,37 @@
-# Fall-Detection-using-Sensor-Data
-This project focuses on detecting falls using sensor data collected from wearable devices. The goal is to classify whether a person has fallen or is performing normal activities based on accelerometer and gyroscope readings. The dataset includes sensor data from multiple body parts, such as the right pocket, belt, neck, and wrist.
+# Fall Detection using Smartphone Sensor Data
 
-# Dataset
-The dataset used in this project is collected from sensors placed on different body parts, including the right pocket, belt, neck, and wrist. The dataset contains the following columns:
+This project implements a deep learning-based fall detection system using smartphone sensor data. The goal is to accurately classify whether a person has experienced a fall or is performing normal activities based on accelerometer and gyroscope readings.
 
-* Accelerometer Data: x, y, z-axis readings from the accelerometer.
+## Overview
 
-* Gyroscope Data: x, y, z-axis readings from the gyroscope.
+The system uses a 1D Convolutional Neural Network (CNN) with residual connections to analyze time-series sensor data and detect falls in real-time. The model has been deployed on both local iOS devices (using Core ML) and cloud infrastructure (AWS SageMaker) for comprehensive performance evaluation.
 
-* Activity Labels: The activity being performed (e.g., walking, running, falling).
+## Dataset
 
-* The dataset is stored in a CSV file named CompleteDataSet.csv.
+The dataset is collected from smartphones placed in different body positions, with primary focus on right pocket placement. The data includes:
 
-* Dataset: https://sites.google.com/up.edu.mx/har-up/
+**Sensor Readings:**
+- Accelerometer: x, y, z-axis measurements
+- Gyroscope: x, y, z-axis measurements
+- Sampling rate: 100 Hz
 
-# Data Preprocessing
-The data preprocessing steps include:
+**Activities:**
+- Normal activities: Walking, Jogging, Stairs, Sitting/Standing, Jumping
+- Fall types: Forward, Backward, Leftward, Rightward
 
-* Loading the Dataset: The dataset is loaded and inspected for missing or inconsistent values.
+**Source:** https://sites.google.com/up.edu.mx/har-up/
 
-* Handling Missing Values: Missing values are replaced with data from the most related subject based on age, height, and weight similarity.
+## Data Processing
 
-* Filtering Data: Data for specific subjects with excessive null values (e.g., Subject 5 and Subject 9) are filtered out to ensure data quality.
+The preprocessing pipeline includes:
 
-* Renaming Columns: Columns are renamed for better readability and consistency.
-
-* Windowing: The time-series data is segmented into fixed-length windows to prepare it for training the model.
+1. **Data Cleaning**: Handling missing values and filtering out subjects with poor data quality
+2. **Feature Engineering**: Renaming and organizing sensor channels for consistency
+3. **Windowing Strategy**: 
+   - Window size: 2 seconds (200 samples at 100 Hz)
+   - Non-fall activities: No overlap
+   - Fall activities: 50% overlap to balance the dataset
+4. **Train/Test Split**: Stratified split to maintain class distribution
 
 # Model Architecture
 The model used in this project is a 1D Convolutional Neural Network (CNN) with residual connections. The architecture includes:
