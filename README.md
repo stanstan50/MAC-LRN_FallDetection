@@ -141,6 +141,8 @@ This project was developed as part of research exploring mobile-cloud computing 
 
 This project is based on the fall detection model from [Fall-Detection-using-Sensor-Data](https://github.com/AbdulrahmenSalem/Fall-Detection-using-Sensor-Data) by AbdulrahmenSalem. The original model has been extended with iOS deployment capabilities and comprehensive performance analysis comparing local and cloud inference architectures.
 
+**AI Assistance**: Portions of this project were developed with the assistance of AI tools for code generation, documentation, and analysis.
+
 ---
 
 **Note**: This system is designed for research and educational purposes. For production deployment in healthcare settings, additional validation, testing, and regulatory compliance would be required.
